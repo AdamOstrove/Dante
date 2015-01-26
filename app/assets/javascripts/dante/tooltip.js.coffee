@@ -1,4 +1,5 @@
 utils = Dante.utils
+config = Dante.config
 
 class Dante.Editor.Tooltip extends Dante.View
   el: ".inlineTooltip"
@@ -7,15 +8,36 @@ class Dante.Editor.Tooltip extends Dante.View
     "click .inlineTooltip-button.control" : "toggleOptions"
     "click .inlineTooltip-menu button" : "handleClick"
 
+#   buttons: Dante.Editor.MyCustomTooltip.buttons
+  buttons: []  
+  
+
+
   initialize: (opts = {})=>
+    @addButton("icon-video", "Add a video", "embed", @displayEmbedPlaceHolder)
     @current_editor = opts.editor
-    @buttons = [
-      {icon: "icon-image", title: "Add an image", action: "image"},
-      {icon: "icon-video", title: "Add a video",  action: "embed"},
-      {icon: "icon-embed", title: "Add an embed", action: "embed-extract"}
-    ]
+#     @buttons = @buttons1
+    @buttons
+#     @buttons = [
+#       {icon: "icon-image", title: "Add an image", action: "image", actionEvent: @imageSelect},
+#       {icon: "icon-video", title: "Add a video",  action: "embed"},
+#       {icon: "icon-embed", title: "Add an embed", action: "embed-extract"}
+#     ]
     #TODO: include section splitter
     #icon: "fa-minus", title: "Add a new part", action: "hr"
+
+  addButton: (icon, title, action, actionEvent)->
+    # if button exists, overwrite it, if not add it in 
+    
+    @buttons.push({
+      icon: icon,
+      title: title,
+      action: action,
+      actionEvent: actionEvent
+    })
+  
+  removeButton: (title)->
+    return false
 
   template: ()->
     menu = ""
@@ -90,16 +112,12 @@ class Dante.Editor.Tooltip extends Dante.View
   handleClick: (ev)->
     name = $(ev.currentTarget).data('action')
     utils.log name
-    switch name
-      when "inline-menu-image"
-        @placeholder = "<p>PLACEHOLDER</p>"
-        @imageSelect(ev)
-      when "inline-menu-embed"
-        @displayEmbedPlaceHolder()
-      when "inline-menu-embed-extract"
-        @displayExtractPlaceHolder()
-      when "inline-menu-hr"
-        @splitSection()
+    
+    return button.actionEvent(ev) for button in @buttons when "inline-menu-" + button.action is name
+    
+    if name is "inline-menu-hr"
+      @splitSection()
+      
     return false
   #UPLOADER
 
@@ -172,7 +190,8 @@ class Dante.Editor.Tooltip extends Dante.View
   displayAndUploadImages: (file)->
     @displayCachedImage file
 
-  imageSelect: (ev)->
+  imageSelect: (ev)=>
+    @placeholder = "<p>PLACEHOLDER</p>"
     $selectFile = $('<input type="file" multiple="multiple">').click()
     self = @
     $selectFile.change ()->
@@ -300,7 +319,7 @@ class Dante.Editor.Tooltip extends Dante.View
     #return false
 
   ## EMBED
-  displayEmbedPlaceHolder: ()->
+  displayEmbedPlaceHolder: ()=>
     ph = @current_editor.embed_placeholder
     @node = @current_editor.getNode()
     $(@node).html(ph).addClass("is-embedable")
@@ -329,7 +348,7 @@ class Dante.Editor.Tooltip extends Dante.View
         @hide()
 
   ##EXTRACT
-  displayExtractPlaceHolder: ()->
+  displayExtractPlaceHolder: ()=>
     ph = @current_editor.extract_placeholder
     @node = @current_editor.getNode()
     $(@node).html(ph).addClass("is-extractable")
