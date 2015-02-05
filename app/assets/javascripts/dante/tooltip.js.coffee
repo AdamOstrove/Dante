@@ -1,5 +1,6 @@
 utils = Dante.utils
 config = Dante.config
+widgets = Dante.widgets
 
 class Dante.Editor.Tooltip extends Dante.View
   el: ".inlineTooltip"
@@ -8,36 +9,15 @@ class Dante.Editor.Tooltip extends Dante.View
     "click .inlineTooltip-button.control" : "toggleOptions"
     "click .inlineTooltip-menu button" : "handleClick"
 
-#   buttons: Dante.Editor.MyCustomTooltip.buttons
+  # icon, title, action, actionEvent
   buttons: []  
   
-
-
   initialize: (opts = {})=>
-    @addButton("icon-video", "Add a video", "embed", @displayEmbedPlaceHolder)
     @current_editor = opts.editor
-#     @buttons = @buttons1
-    @buttons
-#     @buttons = [
-#       {icon: "icon-image", title: "Add an image", action: "image", actionEvent: @imageSelect},
-#       {icon: "icon-video", title: "Add a video",  action: "embed"},
-#       {icon: "icon-embed", title: "Add an embed", action: "embed-extract"}
-#     ]
+    @buttons = config.buttons
+
     #TODO: include section splitter
     #icon: "fa-minus", title: "Add a new part", action: "hr"
-
-  addButton: (icon, title, action, actionEvent)->
-    # if button exists, overwrite it, if not add it in 
-    
-    @buttons.push({
-      icon: icon,
-      title: title,
-      action: action,
-      actionEvent: actionEvent
-    })
-  
-  removeButton: (title)->
-    return false
 
   template: ()->
     menu = ""
@@ -54,17 +34,17 @@ class Dante.Editor.Tooltip extends Dante.View
       #{menu}
     </div>"
 
-  insertTemplate: ()->
-    "<figure contenteditable='false' class='graf graf--figure is-defaultValue' name='#{utils.generateUniqueName()}' tabindex='0'>
-      <div style='' class='aspectRatioPlaceholder is-locked'>
-        <div style='padding-bottom: 100%;' class='aspect-ratio-fill'></div>
-        <img src='' data-height='' data-width='' data-image-id='' class='graf-image' data-delayed-src=''>
-      </div>
-      <figcaption contenteditable='true' data-default-value='Type caption for image (optional)' class='imageCaption'>
-        <span class='defaultValue'>Type caption for image (optional)</span>
-        <br>
-      </figcaption>
-    </figure>"
+#   insertTemplate: ()->
+#     "<figure contenteditable='false' class='graf graf--figure is-defaultValue' name='#{utils.generateUniqueName()}' tabindex='0'>
+#       <div style='' class='aspectRatioPlaceholder is-locked'>
+#         <div style='padding-bottom: 100%;' class='aspect-ratio-fill'></div>
+#         <img src='' data-height='' data-width='' data-image-id='' class='graf-image' data-delayed-src=''>
+#       </div>
+#       <figcaption contenteditable='true' data-default-value='Type caption for image (optional)' class='imageCaption'>
+#         <span class='defaultValue'>Type caption for image (optional)</span>
+#         <br>
+#       </figcaption>
+#     </figure>"
 
   extractTemplate: ()->
     "<div class='graf graf--mixtapeEmbed is-selected' name=''>
@@ -113,12 +93,16 @@ class Dante.Editor.Tooltip extends Dante.View
     name = $(ev.currentTarget).data('action')
     utils.log name
     
-    return button.actionEvent(ev) for button in @buttons when "inline-menu-" + button.action is name
+    # Loop over widgets.registeredWidgets to find the correct widget based on action on click, and calls appropriate function
+    return widget.actionEvent(ev) for widget in widgets.registeredWidgets when "inline-menu-" + widget.action is name
     
     if name is "inline-menu-hr"
       @splitSection()
       
     return false
+  
+  
+  
   #UPLOADER
 
   #replace existing img tag , and wrap it in insertTamplate
@@ -187,146 +171,146 @@ class Dante.Editor.Tooltip extends Dante.View
 
       figure.find("img").attr("src", image_element.src)
 
-  displayAndUploadImages: (file)->
-    @displayCachedImage file
+#   displayAndUploadImages: (file)->
+#     @displayCachedImage file
 
-  imageSelect: (ev)=>
-    @placeholder = "<p>PLACEHOLDER</p>"
-    $selectFile = $('<input type="file" multiple="multiple">').click()
-    self = @
-    $selectFile.change ()->
-      t = this
-      self.uploadFiles(t.files)
+#   imageSelect: (ev)=>
+#     @placeholder = "<p>PLACEHOLDER</p>"
+#     $selectFile = $('<input type="file" multiple="multiple">').click()
+#     self = @
+#     $selectFile.change ()->
+#       t = this
+#       self.uploadFiles(t.files)
 
-  displayCachedImage: (file)->
-    @current_editor.tooltip_view.hide()
+#   displayCachedImage: (file)->
+#     @current_editor.tooltip_view.hide()
+# 
+#     reader = new FileReader()
+#     reader.onload = (e)=>
+#       img = new Image
+#       img.src = e.target.result
+#       node = @current_editor.getNode()
+#       self = this
+#       img.onload = ()->
+#         new_tmpl = $(self.insertTemplate())
+# 
+#         replaced_node = $( new_tmpl ).insertBefore($(node))
+# 
+#         img_tag = new_tmpl.find('img.graf-image').attr('src', e.target.result)
+#         img_tag.height = this.height
+#         img_tag.width  = this.width
+# 
+#         utils.log "UPLOADED SHOW FROM CACHE"
+# 
+#         ar = self.getAspectRatio(this.width, this.height)
+# 
+#         replaced_node.find(".aspectRatioPlaceholder").css
+#           'max-width': ar.width
+#           'max-height': ar.height
+# 
+#         replaced_node.find(".graf-image").attr
+#           "data-height": this.height
+#           "data-width": this.width
+# 
+#         replaced_node.find(".aspect-ratio-fill").css
+#           "padding-bottom": "#{ar.ratio}%"
+# 
+#         self.uploadFile file, replaced_node
+# 
+#     reader.readAsDataURL(file)
 
-    reader = new FileReader()
-    reader.onload = (e)=>
-      img = new Image
-      img.src = e.target.result
-      node = @current_editor.getNode()
-      self = this
-      img.onload = ()->
-        new_tmpl = $(self.insertTemplate())
+#   getAspectRatio: (w , h)->
+#     maxWidth = 700
+#     maxHeight = 700
+#     ratio = 0
+#     width = w # Current image width
+#     height = h # Current image height
+# 
+#     # Check if the current width is larger than the max
+#     if width > maxWidth
+#       ratio = maxWidth / width # get ratio for scaling image
+#       height = height * ratio # Reset height to match scaled image
+#       width = width * ratio # Reset width to match scaled image
+# 
+#     # Check if current height is larger than max
+#     else if height > maxHeight
+#       ratio = maxHeight / height # get ratio for scaling image
+#       width = width * ratio # Reset width to match scaled image
+#       height = height * ratio # Reset height to match scaled image
+# 
+#     fill_ratio = height / width * 100
+#     result = { width: width, height: height, ratio: fill_ratio }
+#     utils.log result
+#     result
 
-        replaced_node = $( new_tmpl ).insertBefore($(node))
+#   formatData: (file)->
+#     formData = new FormData()
+#     formData.append('file', file)
+#     return formData
 
-        img_tag = new_tmpl.find('img.graf-image').attr('src', e.target.result)
-        img_tag.height = this.height
-        img_tag.width  = this.width
+#   uploadFiles: (files)=>
+#     acceptedTypes =
+#       "image/png": true
+#       "image/jpeg": true
+#       "image/gif": true
+# 
+#     i = 0
+#     while i < files.length
+#       file = files[i]
+#       if acceptedTypes[file.type] is true
+#         $(@placeholder).append "<progress class=\"progress\" min=\"0\" max=\"100\" value=\"0\">0</progress>"
+#         @displayAndUploadImages(file)
+#       i++
 
-        utils.log "UPLOADED SHOW FROM CACHE"
+#   uploadFile: (file, node)=>
+#     n = node
+#     handleUp = (jqxhr)=>
+#       @uploadCompleted jqxhr, n
+# 
+#     $.ajax
+#       type: "post"
+#       url: @current_editor.upload_url
+#       xhr: =>
+#         xhr = new XMLHttpRequest()
+#         xhr.upload.onprogress = @updateProgressBar
+#         xhr
+#       cache: false
+#       contentType: false
+# 
+#       success: (response) =>
+#         handleUp(response)
+#         return
+#       error: (jqxhr)=>
+#         utils.log("ERROR: got error uploading file #{jqxhr.responseText}")
+# 
+#       processData: false
+#       data: @formatData(file)
 
-        ar = self.getAspectRatio(this.width, this.height)
+#   updateProgressBar: (e)=>
+#     $progress = $('.progress:first', this.$el)
+#     complete = ""
+# 
+#     if (e.lengthComputable)
+#       complete = e.loaded / e.total * 100
+#       complete = complete ? complete : 0
+#       #$progress.attr('value', complete)
+#       #$progress.html(complete)
+#       utils.log "complete"
+#       utils.log complete
 
-        replaced_node.find(".aspectRatioPlaceholder").css
-          'max-width': ar.width
-          'max-height': ar.height
-
-        replaced_node.find(".graf-image").attr
-          "data-height": this.height
-          "data-width": this.width
-
-        replaced_node.find(".aspect-ratio-fill").css
-          "padding-bottom": "#{ar.ratio}%"
-
-        self.uploadFile file, replaced_node
-
-    reader.readAsDataURL(file)
-
-  getAspectRatio: (w , h)->
-    maxWidth = 700
-    maxHeight = 700
-    ratio = 0
-    width = w # Current image width
-    height = h # Current image height
-
-    # Check if the current width is larger than the max
-    if width > maxWidth
-      ratio = maxWidth / width # get ratio for scaling image
-      height = height * ratio # Reset height to match scaled image
-      width = width * ratio # Reset width to match scaled image
-
-    # Check if current height is larger than max
-    else if height > maxHeight
-      ratio = maxHeight / height # get ratio for scaling image
-      width = width * ratio # Reset width to match scaled image
-      height = height * ratio # Reset height to match scaled image
-
-    fill_ratio = height / width * 100
-    result = { width: width, height: height, ratio: fill_ratio }
-    utils.log result
-    result
-
-  formatData: (file)->
-    formData = new FormData()
-    formData.append('file', file)
-    return formData
-
-  uploadFiles: (files)=>
-    acceptedTypes =
-      "image/png": true
-      "image/jpeg": true
-      "image/gif": true
-
-    i = 0
-    while i < files.length
-      file = files[i]
-      if acceptedTypes[file.type] is true
-        $(@placeholder).append "<progress class=\"progress\" min=\"0\" max=\"100\" value=\"0\">0</progress>"
-        @displayAndUploadImages(file)
-      i++
-
-  uploadFile: (file, node)=>
-    n = node
-    handleUp = (jqxhr)=>
-      @uploadCompleted jqxhr, n
-
-    $.ajax
-      type: "post"
-      url: @current_editor.upload_url
-      xhr: =>
-        xhr = new XMLHttpRequest()
-        xhr.upload.onprogress = @updateProgressBar
-        xhr
-      cache: false
-      contentType: false
-
-      success: (response) =>
-        handleUp(response)
-        return
-      error: (jqxhr)=>
-        utils.log("ERROR: got error uploading file #{jqxhr.responseText}")
-
-      processData: false
-      data: @formatData(file)
-
-  updateProgressBar: (e)=>
-    $progress = $('.progress:first', this.$el)
-    complete = ""
-
-    if (e.lengthComputable)
-      complete = e.loaded / e.total * 100
-      complete = complete ? complete : 0
-      #$progress.attr('value', complete)
-      #$progress.html(complete)
-      utils.log "complete"
-      utils.log complete
-
-  uploadCompleted: (url, node)=>
-    node.find("img").attr("src", url)
-    #return false
+#   uploadCompleted: (url, node)=>
+#     node.find("img").attr("src", url)
+#     #return false
 
   ## EMBED
-  displayEmbedPlaceHolder: ()=>
-    ph = @current_editor.embed_placeholder
-    @node = @current_editor.getNode()
-    $(@node).html(ph).addClass("is-embedable")
-
-    @current_editor.setRangeAt(@node)
-    @hide()
-    false
+#   displayEmbedPlaceHolder: ()=>
+#     ph = @current_editor.embed_placeholder
+#     @node = @current_editor.getNode()
+#     $(@node).html(ph).addClass("is-embedable")
+# 
+#     @current_editor.setRangeAt(@node)
+#     @hide()
+#     false
 
   getEmbedFromNode: (node)=>
     @node = $(node)
@@ -348,14 +332,14 @@ class Dante.Editor.Tooltip extends Dante.View
         @hide()
 
   ##EXTRACT
-  displayExtractPlaceHolder: ()=>
-    ph = @current_editor.extract_placeholder
-    @node = @current_editor.getNode()
-    $(@node).html(ph).addClass("is-extractable")
-
-    @current_editor.setRangeAt(@node)
-    @hide()
-    false
+#   displayExtractPlaceHolder: ()=>
+#     ph = @current_editor.extract_placeholder
+#     @node = @current_editor.getNode()
+#     $(@node).html(ph).addClass("is-extractable")
+# 
+#     @current_editor.setRangeAt(@node)
+#     @hide()
+#     false
 
   getExtractFromNode: (node)=>
     @node = $(node)

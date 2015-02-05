@@ -1,7 +1,11 @@
 
 utils = Dante.utils
+config = Dante.config
+
 
 class Dante.Editor extends Dante.View
+
+
 
   events:
     "mouseup" : "handleMouseUp"
@@ -22,22 +26,37 @@ class Dante.Editor extends Dante.View
     "mouseout  .markup--anchor" : "hidePopOver"
 
   initialize: (opts = {})=>
+    config.initialize(opts)
+
+    
     @editor_options = opts
+    
     #globals for selected text and node
     @initial_html    = $(@el).html()
+    
     @current_range   = null
     @current_node    = null
-    @el = opts.el || "#editor"
-    @upload_url      = opts.upload_url  || "/uploads.json"
-    @oembed_url      = opts.oembed_url  || "http://api.embed.ly/1/oembed?url="
-    @extract_url     = opts.extract_url || "http://api.embed.ly/1/extract?key=86c28a410a104c8bb58848733c82f840&url="
-    @default_loading_placeholder = opts.default_loading_placeholder || Dante.defaults.image_placeholder
-    @store_url       = opts.store_url
-    @spell_check     = opts.spellcheck || false
-    @disable_title   = opts.disable_title || false
-    @store_interval  = opts.store_interval || 15000
+    
+    @el              = config.el
+    
+    @upload_url      = config.upload_url
+    
+    @oembed_url      = config.oembed_url
+    
+    @extract_url     = config.extract_url
+    
+    @default_loading_placeholder = config.default_loading_placeholder
+    
+    @store_url       = config.store_url
+    
+    @spell_check     = config.spellcheck 
+    
+    @disable_title   = config.disable_title 
+    
+    @store_interval  = config.store_interval 
+    
     @paste_element_id = "#dante-paste-div"
-    window.debugMode = opts.debug || false
+    
     $(@el).addClass("debug") if window.debugMode
     if (localStorage.getItem('contenteditable'))
       $(@el).html  localStorage.getItem('contenteditable')
@@ -765,7 +784,7 @@ class Dante.Editor extends Dante.View
     if (_.contains([8, 32, 13], e.which))
       if $(anchor_node).hasClass("graf--li")
         @removeSpanTag($(anchor_node));
-
+    
     if (e.which == 8)
 
       #if detect all text deleted , re render
@@ -805,8 +824,8 @@ class Dante.Editor extends Dante.View
       #  @markAsSelected(anchor_node)
       #  @setupFirstAndLast()
       #  @displayTooltipAt($(@el).find(".is-selected"))
-
-
+      
+        
     #arrows key
     if _.contains([37,38,39,40], e.which)
       @handleArrow(e)
@@ -835,7 +854,7 @@ class Dante.Editor extends Dante.View
     utils.log ("POSITION FOR TOOLTIP")
     #utils.log $(element)
     element = $(element)
-    return if !element || _.isUndefined(element) || _.isEmpty(element) || element[0].tagName is "LI"
+    return if !element || _.isEmpty(element) || element[0].tagName is "LI"
     @tooltip_view.hide()
     return unless _.isEmpty( element.text() )
     @positions = element.offset()
@@ -1061,22 +1080,22 @@ class Dante.Editor extends Dante.View
   # LIST METHODS
 
   listify: ($paragraph, listType, regex)->
-
+  
     utils.log "LISTIFY PARAGRAPH"
-
+    
     @removeSpanTag($paragraph);
-
+    
     content = $paragraph.html().replace(/&nbsp;/g, " ").replace(regex, "")
-
+    
     switch(listType)
       when "ul" then $list = $("<ul></ul>")
       when "ol" then $list = $("<ol></ol>")
       else return false
-
+   
     @addClassesToElement($list[0])
     @replaceWith("li", $paragraph)
     $li = $(".is-selected")
-
+    
     @setElementName($li[0])
 
     $li.html(content).wrap($list)
@@ -1103,7 +1122,7 @@ class Dante.Editor extends Dante.View
       if(match)
         utils.log("CREATING LIST ITEM")
         e.preventDefault()
-
+        
         regex = new RegExp(/\s*1(\.|\))\s*/)
         $li = @listify($item, "ol", regex)
     $li
@@ -1119,8 +1138,8 @@ class Dante.Editor extends Dante.View
 
     else if $li.text() is "" and ($li.next().length isnt 0)
       e.preventDefault()
-
-    else if ($li.next().length is 0)
+      
+    else if ($li.next().length is 0) 
       if($li.text() is "")
         e.preventDefault()
         utils.log("BREAK FROM LIST")
@@ -1164,11 +1183,11 @@ class Dante.Editor extends Dante.View
         $list.remove()
 
       @setupFirstAndLast()
-
+    
   #Remove Non-default Spans From Elements
   removeSpanTag: ($item)->
-
+    
     $spans = $item.find("span")
     $(span).replaceWith($(span).html()) for span in $spans when not $(span).hasClass("defaultValue")
     $item
-
+    
