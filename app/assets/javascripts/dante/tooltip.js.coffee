@@ -14,7 +14,8 @@ class Dante.Editor.Tooltip extends Dante.View
   
   initialize: (opts = {})=>
     @current_editor = opts.editor
-    @buttons = config.buttons
+    @buttons = widgets.registeredWidgets
+    
 
     #TODO: include section splitter
     #icon: "fa-minus", title: "Add a new part", action: "hr"
@@ -34,17 +35,18 @@ class Dante.Editor.Tooltip extends Dante.View
       #{menu}
     </div>"
 
-#   insertTemplate: ()->
-#     "<figure contenteditable='false' class='graf graf--figure is-defaultValue' name='#{utils.generateUniqueName()}' tabindex='0'>
-#       <div style='' class='aspectRatioPlaceholder is-locked'>
-#         <div style='padding-bottom: 100%;' class='aspect-ratio-fill'></div>
-#         <img src='' data-height='' data-width='' data-image-id='' class='graf-image' data-delayed-src=''>
-#       </div>
-#       <figcaption contenteditable='true' data-default-value='Type caption for image (optional)' class='imageCaption'>
-#         <span class='defaultValue'>Type caption for image (optional)</span>
-#         <br>
-#       </figcaption>
-#     </figure>"
+
+  insertTemplate: ()->
+    "<figure contenteditable='false' class='graf graf--figure is-defaultValue' name='#{utils.generateUniqueName()}' tabindex='0'>
+      <div style='' class='aspectRatioPlaceholder is-locked'>
+        <div style='padding-bottom: 100%;' class='aspect-ratio-fill'></div>
+        <img src='' data-height='' data-width='' data-image-id='' class='graf-image' data-delayed-src=''>
+      </div>
+      <figcaption contenteditable='true' data-default-value='Type caption for image (optional)' class='imageCaption'>
+        <span class='defaultValue'>Type caption for image (optional)</span>
+        <br>
+      </figcaption>
+    </figure>"
 
   extractTemplate: ()->
     "<div class='graf graf--mixtapeEmbed is-selected' name=''>
@@ -92,10 +94,12 @@ class Dante.Editor.Tooltip extends Dante.View
   handleClick: (ev)->
     name = $(ev.currentTarget).data('action')
     utils.log name
+    utils.log widgets.registeredWidgets[1]
     
+    @hide()
     # Loop over widgets.registeredWidgets to find the correct widget based on action on click, and calls appropriate function
     return widget.actionEvent(ev) for widget in widgets.registeredWidgets when "inline-menu-" + widget.action is name
-    
+
     if name is "inline-menu-hr"
       @splitSection()
       
@@ -219,29 +223,29 @@ class Dante.Editor.Tooltip extends Dante.View
 # 
 #     reader.readAsDataURL(file)
 
-#   getAspectRatio: (w , h)->
-#     maxWidth = 700
-#     maxHeight = 700
-#     ratio = 0
-#     width = w # Current image width
-#     height = h # Current image height
-# 
-#     # Check if the current width is larger than the max
-#     if width > maxWidth
-#       ratio = maxWidth / width # get ratio for scaling image
-#       height = height * ratio # Reset height to match scaled image
-#       width = width * ratio # Reset width to match scaled image
-# 
-#     # Check if current height is larger than max
-#     else if height > maxHeight
-#       ratio = maxHeight / height # get ratio for scaling image
-#       width = width * ratio # Reset width to match scaled image
-#       height = height * ratio # Reset height to match scaled image
-# 
-#     fill_ratio = height / width * 100
-#     result = { width: width, height: height, ratio: fill_ratio }
-#     utils.log result
-#     result
+  getAspectRatio: (w , h)->
+    maxWidth = 700
+    maxHeight = 700
+    ratio = 0
+    width = w # Current image width
+    height = h # Current image height
+
+    # Check if the current width is larger than the max
+    if width > maxWidth
+      ratio = maxWidth / width # get ratio for scaling image
+      height = height * ratio # Reset height to match scaled image
+      width = width * ratio # Reset width to match scaled image
+
+    # Check if current height is larger than max
+    else if height > maxHeight
+      ratio = maxHeight / height # get ratio for scaling image
+      width = width * ratio # Reset width to match scaled image
+      height = height * ratio # Reset height to match scaled image
+
+    fill_ratio = height / width * 100
+    result = { width: width, height: height, ratio: fill_ratio }
+    utils.log result
+    result
 
 #   formatData: (file)->
 #     formData = new FormData()

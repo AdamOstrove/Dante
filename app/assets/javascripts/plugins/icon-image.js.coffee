@@ -1,3 +1,5 @@
+utils = Dante.utils
+
 imageWidget = {}
 
 imageWidget.name = "icon-image"
@@ -8,9 +10,7 @@ imageWidget.title = "Add an image"
 
 imageWidget.action = "image"
 
-imageWidget.actionEvent = @imageSelect
-
-imageWidget.imageSelect = (ev)=>
+imageSelect = (ev)->
   @placeholder = "<p>PLACEHOLDER</p>"
   $selectFile = $('<input type="file" multiple="multiple">').click()
   self = @
@@ -18,6 +18,8 @@ imageWidget.imageSelect = (ev)=>
     t = this
     self.uploadFiles(t.files)
     
+
+imageWidget.actionEvent = imageSelect
     
 imageWidget.uploadFiles = (files)=>
   acceptedTypes =
@@ -157,4 +159,5 @@ imageWidget.formatData = (file)->
   return formData
   
 # Adds this widget to the array registeredWidgets
-window.Dante.widgets.register(imageWidget)
+Dante.widgets.register(imageWidget)
+utils.log(Dante)

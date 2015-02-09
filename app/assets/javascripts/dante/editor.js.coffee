@@ -27,9 +27,9 @@ class Dante.Editor extends Dante.View
 
   initialize: (opts = {})=>
     config.initialize(opts)
-
+    config.current_editor = @
     
-    @editor_options = opts
+    @editor_options = config.editor_options
     
     #globals for selected text and node
     @initial_html    = $(@el).html()
@@ -252,9 +252,13 @@ class Dante.Editor extends Dante.View
   getNode: ()->
     node = undefined
     root = $(@el).find(".section-inner")[0]
+    utils.log("GETNODE THINKS @ IS: ")
+    utils.log(@)
     return if @selection().rangeCount < 1
     range = @selection().getRangeAt(0)
     node = range.commonAncestorContainer
+    utils.log("GETNODE THINKS NODE IS: ")
+    utils.log(node)
     return null  if not node or node is root
 
     #node = node.parentNode while node and (node.nodeType isnt 1) and (node.parentNode isnt root)
@@ -619,6 +623,7 @@ class Dante.Editor extends Dante.View
 
   handleKeyDown: (e)->
     utils.log "KEYDOWN"
+    utils.log(Dante)
 
     anchor_node = @getNode() #current node on which cursor is positioned
     $node = $(anchor_node);
@@ -646,27 +651,27 @@ class Dante.Editor extends Dante.View
       else if $node.hasClass("graf--li")
         @handleListLineBreak($node, e)
 
-      #embeds or extracts
-      if parent.hasClass("is-embedable")
-        @tooltip_view.getEmbedFromNode($(anchor_node))
-      else if parent.hasClass("is-extractable")
-        @tooltip_view.getExtractFromNode($(anchor_node))
+      # #embeds or extracts
+      # if parent.hasClass("is-embedable")
+      #   @tooltip_view.getEmbedFromNode($(anchor_node))
+      # else if parent.hasClass("is-extractable")
+      #   @tooltip_view.getExtractFromNode($(anchor_node))
 
-      #supress linebreak into embed page text unless last char
-      if parent.hasClass("graf--mixtapeEmbed") or parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-        utils.log("supress linebreak from embed !(last char)")
-        return false unless @isLastChar()
+      # #supress linebreak into embed page text unless last char
+      # if parent.hasClass("graf--mixtapeEmbed") or parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
+      #   utils.log("supress linebreak from embed !(last char)")
+      #   return false unless @isLastChar()
 
-      #supress linebreak or create new <p> into embed caption unless last char el
-      if parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-        if @isLastChar()
-          @handleLineBreakWith("p", parent)
-          @setRangeAtText($(".is-selected")[0])
+      # #supress linebreak or create new <p> into embed caption unless last char el
+      # if parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
+      #   if @isLastChar()
+      #     @handleLineBreakWith("p", parent)
+      #     @setRangeAtText($(".is-selected")[0])
 
-          $(".is-selected").trigger("mouseup") #is not making any change
-          return false
-        else
-          return false
+      #     $(".is-selected").trigger("mouseup") #is not making any change
+      #     return false
+      #   else
+      #     return false
 
       @tooltip_view.cleanOperationClasses($(anchor_node))
 
