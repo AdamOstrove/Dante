@@ -249,9 +249,9 @@ class Dante.Editor extends Dante.View
     @.setRange(range)
 
   #get the element that wraps Caret position while is inside section
-  getNode: ()->
+  getNode: ()=>
     node = undefined
-    root = $(@el).find(".section-inner")[0]
+    root = $(config.el).find(".section-inner")[0]
     utils.log("GETNODE THINKS @ IS: ")
     utils.log(@)
     return if @selection().rangeCount < 1
@@ -623,7 +623,7 @@ class Dante.Editor extends Dante.View
 
   handleKeyDown: (e)->
     utils.log "KEYDOWN"
-    utils.log(Dante)
+    utils.log(@)
 
     anchor_node = @getNode() #current node on which cursor is positioned
     $node = $(anchor_node);

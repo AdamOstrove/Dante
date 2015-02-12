@@ -10,3 +10,4 @@
 //= require dante/menu
 //= require plugins/icon-image
 //= require plugins/icon-video
+//= require plugins/icon-dummy

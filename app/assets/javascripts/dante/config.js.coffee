@@ -18,7 +18,5 @@ config.initialize = (opts ={})->
   @editor_options  = opts
   window.debugMode = opts.debug || false
   
-  utils.log @
-
   # Users list the names of the widgets to be displayed in the tooltip. 
-  @buttons = [ "icon-image", "icon-video" ]
+  @buttons = [ "icon-image", "icon-video", "icon-dummy" ]
