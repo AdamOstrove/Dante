@@ -1,7 +1,7 @@
 
-utils = Dante.utils
-config = Dante.config
-
+utils   = Dante.utils
+config  = Dante.config
+widgets = Dante.widgets
 
 class Dante.Editor extends Dante.View
 
@@ -63,10 +63,13 @@ class Dante.Editor extends Dante.View
 
     @store()
 
-    @title_placeholder    = "<span class='defaultValue defaultValue--root'>Title</span><br>"
-    @body_placeholder     = "<span class='defaultValue defaultValue--root'>Tell your story…</span><br>"
-    @embed_placeholder    = "<span class='defaultValue defaultValue--prompt'>Paste a YouTube, Vine, Vimeo, or other video link, and press Enter</span><br>"
-    @extract_placeholder  = "<span class='defaultValue defaultValue--prompt'>Paste a link to embed content from another site (e.g. Twitter) and press Enter</span><br>"
+    @title_placeholder    = config.title_placeholder
+    @body_placeholder     = config.body_placeholder
+    @embed_placeholder    = config.embed_placeholder
+    @extract_placeholder  = config.extract_placeholder
+
+    config.current_editor = @
+
 
   store: ()->
     #localStorage.setItem("contenteditable", $(@el).html() )
@@ -252,13 +255,9 @@ class Dante.Editor extends Dante.View
   getNode: ()=>
     node = undefined
     root = $(config.el).find(".section-inner")[0]
-    utils.log("GETNODE THINKS @ IS: ")
-    utils.log(@)
     return if @selection().rangeCount < 1
     range = @selection().getRangeAt(0)
     node = range.commonAncestorContainer
-    utils.log("GETNODE THINKS NODE IS: ")
-    utils.log(node)
     return null  if not node or node is root
 
     #node = node.parentNode while node and (node.nodeType isnt 1) and (node.parentNode isnt root)
@@ -651,6 +650,11 @@ class Dante.Editor extends Dante.View
       else if $node.hasClass("graf--li")
         @handleListLineBreak($node, e)
 
+      #Allow widgets to handle their own keydown events
+      for widget in widgets.registeredWidgets
+        if widget.handleKeyDown
+          widget.handleKeyDown(e, @getNode())
+          
       # #embeds or extracts
       # if parent.hasClass("is-embedable")
       #   @tooltip_view.getEmbedFromNode($(anchor_node))

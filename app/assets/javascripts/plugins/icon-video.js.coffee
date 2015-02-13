@@ -22,42 +22,105 @@ displayEmbedPlaceHolder = ()->
 
 videoWidget.actionEvent = displayEmbedPlaceHolder
 
-$(Dante.Editor).on("keydown", (e) =>
+videoWidget.handleKeyDown = (e, node) -> 
+  editor  = Dante.Editor.prototype
+  tooltip = Dante.Editor.Tooltip.prototype
+  $target = $(node)
+
+  utils.log("VIDEO HANDLE KEYDOWN")
+
+  utils.log("TARGET IS: ")
+  utils.log($target)
 
   if e.which is 13
-    utils.log("THIS IS INSIDE OF THE VIDEO WIDGET")
 
-    # utils.log(Dante.Editor.$el)
+    #embeds or extracts
+    if $target.hasClass("is-embedable")
+      getEmbedFromNode(node)
+    else if $target.hasClass("is-extractable")
+      getExtractFromNode(node)
 
-    utils.log("THE ANCHOR NODE IS: ")
+    #supress linebreak into embed page text unless last char
+    if $target.hasClass("graf--mixtapeEmbed") or $target.hasClass("graf--iframe") or $target.hasClass("graf--figure")
+      utils.log("supress linebreak from embed !(last char)")
+      return false unless editor.isLastChar()
 
-    anchor_node = Dante.Editor.prototype.getNode() #current node on which cursor is positioned
-    parent = $(anchor_node)
+    #supress linebreak or create new <p> into embed caption unless last char el
+    if $target.hasClass("graf--iframe") or $target.hasClass("graf--figure")
+      if editor.isLastChar()
+        editor.handleLineBreakWith("p", parent)
+        editor.setRangeAtText($(".is-selected")[0])
 
-    utils.log("VIDEO WIDGET THINKS ANCHOR NODE IS: ")
-    utils.log(anchor_node)
+        $(".is-selected").trigger("mouseup") #is not making any change
+        return false
+      else
+        return false
 
-  #   #embeds or extracts
-  #   if parent.hasClass("is-embedable")
-  #     Dante.Editor.tooltip_view.getEmbedFromNode($(anchor_node))
-  #   else if parent.hasClass("is-extractable")
-  #     Dante.Editor.tooltip_view.getExtractFromNode($(anchor_node))
+  else
+    return false
 
-  #   #supress linebreak into embed page text unless last char
-  #   if parent.hasClass("graf--mixtapeEmbed") or parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-  #     utils.log("supress linebreak from embed !(last char)")
-  #     return false unless Dante.Editor.isLastChar()
+getEmbedFromNode = (node)->
+  @node = $(node)
+  @node_name = @node.attr("name")
+  @node.addClass("spinner")
 
-  #   #supress linebreak or create new <p> into embed caption unless last char el
-  #   if parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-  #     if Dante.Editor.isLastChar()
-  #       Dante.Editor.handleLineBreakWith("p", parent)
-  #       Dante.Editor.setRangeAtText($(".is-selected")[0])
+  $.getJSON("#{config.current_editor.oembed_url}#{$(@node).text()}")
+    .success (data)=>
+      @node = $("[name=#{@node_name}]")
+      iframe_src = $(data.html).prop("src")
+      tmpl = $(embedTemplate())
+      tmpl.attr("name", @node.attr("name"))
+      $(@node).replaceWith(tmpl)
+      replaced_node = $(".graf--iframe[name=#{@node.attr("name")}]")
+      replaced_node.find("iframe").attr("src", iframe_src)
+      url = data.url || data.author_url
+      utils.log "URL IS #{url}"
+      replaced_node.find(".markup--anchor").attr("href", url ).text(url)
+      Dante.Editor.Tooltip.prototype.hide()
 
-  #       $(".is-selected").trigger("mouseup") #is not making any change
-  #       return false
-  #     else
-  #       return false
-)
+getExtractFromNode = (node)=>
+  @node = $(node)
+  @node_name = @node.attr("name")
+  @node.addClass("spinner")
+
+  $.getJSON("#{config.current_editor.extract_url}#{$(@node).text()}").success (data)=>
+    @node = $("[name=#{@node_name}]")
+    iframe_src = $(data.html).prop("src")
+    tmpl = $(extractTemplate())
+    tmpl.attr("name", @node.attr("name"))
+    $(@node).replaceWith(tmpl)
+    replaced_node = $(".graf--mixtapeEmbed[name=#{@node.attr("name")}]")
+    replaced_node.find("strong").text(data.title)
+    replaced_node.find("em").text(data.description)
+    replaced_node.append(data.provider_url)
+    replaced_node.find(".markup--anchor").attr("href", data.url )
+    unless _.isEmpty data.images
+      image_node = replaced_node.find(".mixtapeImage")
+      image_node.css("background-image", "url(#{data.images[0].url})")
+      image_node.removeClass("mixtapeImage--empty u-ignoreBlock")
+    Dante.Editor.Tooltip.prototype.hide()
+
+extractTemplate = ()->
+  "<div class='graf graf--mixtapeEmbed is-selected' name=''>
+    <a target='_blank' data-media-id='' class='js-mixtapeImage mixtapeImage mixtapeImage--empty u-ignoreBlock' href=''>
+    </a>
+    <a data-tooltip-type='link' data-tooltip-position='bottom' data-tooltip='' title='' class='markup--anchor markup--mixtapeEmbed-anchor' data-href='' href='' target='_blank'>
+      <strong class='markup--strong markup--mixtapeEmbed-strong'></strong>
+      <em class='markup--em markup--mixtapeEmbed-em'></em>
+    </a>
+  </div>"
+
+embedTemplate = ()->
+  "<figure contenteditable='false' class='graf--figure graf--iframe graf--first' name='504e' tabindex='0'>
+    <div class='iframeContainer'>
+      <iframe frameborder='0' width='700' height='393' data-media-id='' src='' data-height='480' data-width='854'>
+      </iframe>
+    </div>
+    <figcaption contenteditable='true' data-default-value='Type caption for embed (optional)' class='imageCaption'>
+      <a rel='nofollow' class='markup--anchor markup--figure-anchor' data-href='' href='' target='_blank'>
+
+      </a>
+    </figcaption>
+  </figure>"
 
 Dante.widgets.register(videoWidget)
