@@ -13,7 +13,7 @@ videoWidget.action = "video"
 displayEmbedPlaceHolder = ()->
   current_editor = config.current_editor
   utils.log(current_editor)
-  ph = current_editor.embed_placeholder
+  ph = config.embed_placeholder
   @node = current_editor.getNode()
   $(@node).html(ph).addClass("is-embedable")
 
@@ -27,18 +27,15 @@ videoWidget.handleKeyDown = (e, node) ->
   tooltip = Dante.Editor.Tooltip.prototype
   $target = $(node)
 
-  utils.log("VIDEO HANDLE KEYDOWN")
-
-  utils.log("TARGET IS: ")
-  utils.log($target)
-
   if e.which is 13
+
+    utils.log("VIDEO HANDLE KEYDOWN")
+    utils.log("TARGET IS: ")
+    utils.log($target)
 
     #embeds or extracts
     if $target.hasClass("is-embedable")
       getEmbedFromNode(node)
-    else if $target.hasClass("is-extractable")
-      getExtractFromNode(node)
 
     #supress linebreak into embed page text unless last char
     if $target.hasClass("graf--mixtapeEmbed") or $target.hasClass("graf--iframe") or $target.hasClass("graf--figure")
@@ -77,38 +74,42 @@ getEmbedFromNode = (node)->
       utils.log "URL IS #{url}"
       replaced_node.find(".markup--anchor").attr("href", url ).text(url)
       Dante.Editor.Tooltip.prototype.hide()
+    .error (jqXHR, textStatus)=>
+      utils.log("THERE WAS AN ERROR!")
+      utils.log(textStatus)
+      @node.removeClass("spinner")
 
-getExtractFromNode = (node)=>
-  @node = $(node)
-  @node_name = @node.attr("name")
-  @node.addClass("spinner")
+# getExtractFromNode = (node)=>
+#   @node = $(node)
+#   @node_name = @node.attr("name")
+#   @node.addClass("spinner")
 
-  $.getJSON("#{config.current_editor.extract_url}#{$(@node).text()}").success (data)=>
-    @node = $("[name=#{@node_name}]")
-    iframe_src = $(data.html).prop("src")
-    tmpl = $(extractTemplate())
-    tmpl.attr("name", @node.attr("name"))
-    $(@node).replaceWith(tmpl)
-    replaced_node = $(".graf--mixtapeEmbed[name=#{@node.attr("name")}]")
-    replaced_node.find("strong").text(data.title)
-    replaced_node.find("em").text(data.description)
-    replaced_node.append(data.provider_url)
-    replaced_node.find(".markup--anchor").attr("href", data.url )
-    unless _.isEmpty data.images
-      image_node = replaced_node.find(".mixtapeImage")
-      image_node.css("background-image", "url(#{data.images[0].url})")
-      image_node.removeClass("mixtapeImage--empty u-ignoreBlock")
-    Dante.Editor.Tooltip.prototype.hide()
+#   $.getJSON("#{config.current_editor.extract_url}#{$(@node).text()}").success (data)=>
+#     @node = $("[name=#{@node_name}]")
+#     iframe_src = $(data.html).prop("src")
+#     tmpl = $(extractTemplate())
+#     tmpl.attr("name", @node.attr("name"))
+#     $(@node).replaceWith(tmpl)
+#     replaced_node = $(".graf--mixtapeEmbed[name=#{@node.attr("name")}]")
+#     replaced_node.find("strong").text(data.title)
+#     replaced_node.find("em").text(data.description)
+#     replaced_node.append(data.provider_url)
+#     replaced_node.find(".markup--anchor").attr("href", data.url )
+#     unless _.isEmpty data.images
+#       image_node = replaced_node.find(".mixtapeImage")
+#       image_node.css("background-image", "url(#{data.images[0].url})")
+#       image_node.removeClass("mixtapeImage--empty u-ignoreBlock")
+#     Dante.Editor.Tooltip.prototype.hide()
 
-extractTemplate = ()->
-  "<div class='graf graf--mixtapeEmbed is-selected' name=''>
-    <a target='_blank' data-media-id='' class='js-mixtapeImage mixtapeImage mixtapeImage--empty u-ignoreBlock' href=''>
-    </a>
-    <a data-tooltip-type='link' data-tooltip-position='bottom' data-tooltip='' title='' class='markup--anchor markup--mixtapeEmbed-anchor' data-href='' href='' target='_blank'>
-      <strong class='markup--strong markup--mixtapeEmbed-strong'></strong>
-      <em class='markup--em markup--mixtapeEmbed-em'></em>
-    </a>
-  </div>"
+# extractTemplate = ()->
+#   "<div class='graf graf--mixtapeEmbed is-selected' name=''>
+#     <a target='_blank' data-media-id='' class='js-mixtapeImage mixtapeImage mixtapeImage--empty u-ignoreBlock' href=''>
+#     </a>
+#     <a data-tooltip-type='link' data-tooltip-position='bottom' data-tooltip='' title='' class='markup--anchor markup--mixtapeEmbed-anchor' data-href='' href='' target='_blank'>
+#       <strong class='markup--strong markup--mixtapeEmbed-strong'></strong>
+#       <em class='markup--em markup--mixtapeEmbed-em'></em>
+#     </a>
+#   </div>"
 
 embedTemplate = ()->
   "<figure contenteditable='false' class='graf--figure graf--iframe graf--first' name='504e' tabindex='0'>

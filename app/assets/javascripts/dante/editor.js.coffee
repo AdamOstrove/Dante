@@ -629,12 +629,17 @@ class Dante.Editor extends Dante.View
 
     @markAsSelected( anchor_node ) if anchor_node
 
+    #Allow widgets to handle their own keydown events
+    for widget in widgets.registeredWidgets
+      if widget.handleKeyDown
+        widget.handleKeyDown(e, anchor_node)
+
     if e.which is 9
 
       @handleTab(anchor_node)
       return false
 
-    if e.which == 13
+    if e.which is 13
 
       #removes previous selected nodes
       $(@el).find(".is-selected").removeClass("is-selected")
@@ -649,33 +654,6 @@ class Dante.Editor extends Dante.View
         anchor_node = li if li
       else if $node.hasClass("graf--li")
         @handleListLineBreak($node, e)
-
-      #Allow widgets to handle their own keydown events
-      for widget in widgets.registeredWidgets
-        if widget.handleKeyDown
-          widget.handleKeyDown(e, @getNode())
-          
-      # #embeds or extracts
-      # if parent.hasClass("is-embedable")
-      #   @tooltip_view.getEmbedFromNode($(anchor_node))
-      # else if parent.hasClass("is-extractable")
-      #   @tooltip_view.getExtractFromNode($(anchor_node))
-
-      # #supress linebreak into embed page text unless last char
-      # if parent.hasClass("graf--mixtapeEmbed") or parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-      #   utils.log("supress linebreak from embed !(last char)")
-      #   return false unless @isLastChar()
-
-      # #supress linebreak or create new <p> into embed caption unless last char el
-      # if parent.hasClass("graf--iframe") or parent.hasClass("graf--figure")
-      #   if @isLastChar()
-      #     @handleLineBreakWith("p", parent)
-      #     @setRangeAtText($(".is-selected")[0])
-
-      #     $(".is-selected").trigger("mouseup") #is not making any change
-      #     return false
-      #   else
-      #     return false
 
       @tooltip_view.cleanOperationClasses($(anchor_node))
 

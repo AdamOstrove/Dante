@@ -338,14 +338,14 @@ class Dante.Editor.Tooltip extends Dante.View
   #       @hide()
 
   ##EXTRACT
-#   displayExtractPlaceHolder: ()=>
-#     ph = @current_editor.extract_placeholder
-#     @node = @current_editor.getNode()
-#     $(@node).html(ph).addClass("is-extractable")
-# 
-#     @current_editor.setRangeAt(@node)
-#     @hide()
-#     false
+  # displayExtractPlaceHolder: ()=>
+  #   ph = @current_editor.extract_placeholder
+  #   @node = @current_editor.getNode()
+  #   $(@node).html(ph).addClass("is-extractable")
+
+  #   @current_editor.setRangeAt(@node)
+  #   @hide()
+  #   false
 
   # getExtractFromNode: (node)=>
   #   @node = $(node)

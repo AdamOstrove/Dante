@@ -10,4 +10,5 @@
 //= require dante/menu
 //= require plugins/icon-image
 //= require plugins/icon-video
+//= require plugins/icon-embed
 //= require plugins/icon-dummy
