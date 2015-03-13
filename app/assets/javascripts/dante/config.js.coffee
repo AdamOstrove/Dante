@@ -26,4 +26,4 @@ config.initialize = (opts ={})->
   window.debugMode = opts.debug || false
   
   # Users list the names of the widgets to be displayed in the tooltip. 
-  @buttons = [ "icon-image", "icon-video", "icon-embed", "icon-dummy" ]
+  @buttons = [ "icon-image", "icon-video", "icon-embed"]
