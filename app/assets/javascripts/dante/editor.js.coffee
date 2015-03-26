@@ -68,6 +68,11 @@ class Dante.Editor extends Dante.View
     @widgets.push @embed_widget
     @widgets.push @embed_extract_widget
 
+    btn1 = new window.mapWidget(current_editor: @)
+
+    if not opts.extra_tooltip_widgets
+      opts.extra_tooltip_widgets = [btn1];
+
     #add extra widgets
     if opts.extra_tooltip_widgets
       _.each opts.extra_tooltip_widgets, (w)=>

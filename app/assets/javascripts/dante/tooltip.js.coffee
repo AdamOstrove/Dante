@@ -28,8 +28,11 @@ class Dante.Editor.Tooltip extends Dante.View
     </div>"
 
   findWidgetByAction: (name)->
-    @widgets.find (e)->
-      e.action == name ? e : ""
+    # _.each @widgets, (e)->
+    #   e.action == name ? e : ""
+
+    _.find @widgets, (w)->
+      w.action == name ? w
 
   render: ()=>
     $(@el).html(@template())

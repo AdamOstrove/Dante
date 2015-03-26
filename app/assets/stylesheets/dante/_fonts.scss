@@ -13,5 +13,6 @@
 
 @include dante-font-face(dante, fontello);
 @include dante-font-face(dante-tooltip, dante);
+@include dante-font-face(dante-tooltip, icomoon);
 
 @import url(http://fonts.googleapis.com/css?family=Merriweather:400,700,400italic,700italic|Open+Sans:400,300,800);

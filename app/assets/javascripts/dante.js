@@ -7,6 +7,7 @@
 //= require dante/tooltip_widgets/uploader
 //= require dante/tooltip_widgets/embed
 //= require dante/tooltip_widgets/extract
+//= require dante/tooltip_widgets/test
 //= require dante/tooltip
 //= require dante/popover
 //= require dante/menu
