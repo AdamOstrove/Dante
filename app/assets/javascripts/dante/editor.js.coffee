@@ -22,6 +22,9 @@ class Dante.Editor extends Dante.View
     "mouseout  .markup--anchor" : "hidePopOver"
 
   initialize: (opts = {})=>
+
+    self = @
+
     @editor_options = opts
     #globals for selected text and node
     @initial_html    = $(@el).html()
@@ -85,6 +88,8 @@ class Dante.Editor extends Dante.View
     #add extra widgets
     if opts.extra_tooltip_widgets
       _.each opts.extra_tooltip_widgets, (w)=>
+        if !w.current_editor
+          w.current_editor = self
         @widgets.push w
 
   store: ()->
