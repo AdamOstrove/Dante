@@ -502,7 +502,7 @@
       this.store();
       titleplaceholder = opts.title_placeholder || 'Title';
       this.title_placeholder = "<span class='defaultValue defaultValue--root'>" + titleplaceholder + "</span><br>";
-      bodyplaceholder = opts.body_placeholder || 'Tell your story…';
+      bodyplaceholder = opts.body_placeholder || 'Tell your story&hellip;';
       this.body_placeholder = "<span class='defaultValue defaultValue--root'>" + bodyplaceholder + "</span><br>";
       embedplaceholder = opts.embed_placeholder || 'Paste a YouTube, Vine, Vimeo, or other video link, and press Enter';
       this.embed_placeholder = "<span class='defaultValue defaultValue--root'>" + embedplaceholder + "</span><br>";
@@ -512,8 +512,9 @@
     };
 
     Editor.prototype.initializeWidgets = function(opts) {
-      var base_widgets;
+      var base_widgets, self;
       base_widgets = opts.base_widgets;
+      self = this;
       if (base_widgets.indexOf("uploader") >= 0) {
         this.uploader_widget = new Dante.View.TooltipWidget.Uploader({
           current_editor: this
@@ -535,6 +536,9 @@
       if (opts.extra_tooltip_widgets) {
         return _.each(opts.extra_tooltip_widgets, (function(_this) {
           return function(w) {
+            if(!w.current_editor){
+              w.current_editor = self;
+            }
             return _this.widgets.push(w);
           };
         })(this));
@@ -562,7 +566,7 @@
         return $.ajax({
           url: this.store_url,
           method: "post",
-          data: this.getContent(),
+          data: {"content": this.getContent()},
           success: function(res) {
             utils.log("store!");
             return utils.log(res);
@@ -1543,7 +1547,7 @@
       s = new Sanitize({
         elements: ['strong', 'img', 'em', 'br', 'a', 'blockquote', 'b', 'u', 'i', 'pre', 'p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li'],
         attributes: {
-          '__ALL__': ['class'],
+          '__ALL__': ['class', "data-nodeType", "data-nodeID"],
           a: ['href', 'title', 'target'],
           img: ['src']
         },
@@ -2038,6 +2042,7 @@
       acceptedTypes = {
         "image/png": true,
         "image/jpeg": true,
+        "image/jpg": true,
         "image/gif": true
       };
       i = 0;
